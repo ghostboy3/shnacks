@@ -111,6 +111,291 @@ body {
   flex-wrap: wrap;
 }
 
+.saved-sessions-box {
+  background: linear-gradient(135deg, #f0fdf4 0%, #ecfdf5 100%);
+  border: 2px solid #22c55e;
+  border-radius: 0.9rem;
+  padding: 1rem 1.25rem;
+  margin-bottom: 1rem;
+}
+
+.saved-sessions-box h4 {
+  margin: 0 0 0.75rem;
+  font-size: 1rem;
+  color: #15803d;
+}
+
+.sessions-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+}
+
+.session-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: white;
+  border-radius: 0.6rem;
+  padding: 0.75rem;
+  border: 1px solid #bbf7d0;
+}
+
+.session-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.session-date {
+  font-size: 0.85rem;
+  color: #15803d;
+  font-weight: 500;
+}
+
+.session-messages {
+  font-size: 0.75rem;
+  color: #6b7280;
+}
+
+button.small {
+  padding: 0.4rem 0.8rem;
+  font-size: 0.85rem;
+}
+
+/* Markdown styling */
+.case-content p,
+.chat-bubble p {
+  margin: 0.5rem 0;
+}
+
+.case-content p:first-child,
+.chat-bubble p:first-child {
+  margin-top: 0;
+}
+
+.case-content p:last-child,
+.chat-bubble p:last-child {
+  margin-bottom: 0;
+}
+
+.case-content strong,
+.chat-bubble strong {
+  font-weight: 600;
+  color: inherit;
+}
+
+.case-content ul,
+.chat-bubble ul,
+.case-content ol,
+.chat-bubble ol {
+  margin: 0.5rem 0;
+  padding-left: 1.5rem;
+}
+
+.case-content li,
+.chat-bubble li {
+  margin: 0.25rem 0;
+}
+
+/* Adaptive Case-Based Training Styles */
+.training-mode-toggle {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+  flex-wrap: wrap;
+}
+
+.adaptive-info {
+  background: #f0f9ff;
+  border: 1px solid #0ea5e9;
+  border-radius: 0.6rem;
+  padding: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.performance-stats {
+  display: flex;
+  gap: 1rem;
+  margin-top: 0.5rem;
+  font-size: 0.9rem;
+  color: #0369a1;
+}
+
+.adaptive-case-container {
+  margin-top: 1rem;
+}
+
+.adaptive-case-progress {
+  margin-bottom: 1.5rem;
+}
+
+.adaptive-case-progress h4 {
+  margin: 0 0 0.5rem;
+  color: #1e40af;
+}
+
+.progress-bar {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.progress-step {
+  flex: 1;
+  height: 8px;
+  background: #e5e7eb;
+  border-radius: 4px;
+  transition: all 0.3s;
+}
+
+.progress-step.completed {
+  background: #22c55e;
+}
+
+.progress-step.active {
+  background: #3b82f6;
+  box-shadow: 0 0 8px rgba(59, 130, 246, 0.5);
+}
+
+.adaptive-step {
+  background: white;
+  border: 2px solid #e5e7eb;
+  border-radius: 0.75rem;
+  padding: 1rem;
+  margin-bottom: 1rem;
+}
+
+.adaptive-step.current {
+  border-color: #3b82f6;
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.15);
+}
+
+.adaptive-step.completed {
+  border-color: #22c55e;
+  opacity: 0.8;
+}
+
+.adaptive-step h4 {
+  margin: 0 0 0.75rem;
+  color: #1e40af;
+}
+
+.step-content {
+  background: #f9fafb;
+  padding: 0.75rem;
+  border-radius: 0.5rem;
+  margin-bottom: 1rem;
+  line-height: 1.6;
+}
+
+.decision-form {
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 2px dashed #e5e7eb;
+}
+
+.decision-form h5 {
+  margin: 0 0 0.75rem;
+  color: #374151;
+}
+
+.decision-feedback {
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 2px solid #e5e7eb;
+}
+
+.decision-commitment {
+  background: #f3f4f6;
+  padding: 0.75rem;
+  border-radius: 0.5rem;
+  margin-bottom: 0.75rem;
+  font-size: 0.9rem;
+}
+
+.evaluation {
+  padding: 1rem;
+  border-radius: 0.5rem;
+  margin-top: 0.75rem;
+}
+
+.evaluation.good {
+  background: #f0fdf4;
+  border: 1px solid #22c55e;
+}
+
+.evaluation.moderate {
+  background: #fffbeb;
+  border: 1px solid #f59e0b;
+}
+
+.evaluation.needs-work {
+  background: #fef2f2;
+  border: 1px solid #ef4444;
+}
+
+.evaluation-score {
+  font-weight: 600;
+  font-size: 1.1rem;
+  margin-bottom: 0.5rem;
+}
+
+.evaluation.good .evaluation-score {
+  color: #15803d;
+}
+
+.evaluation.moderate .evaluation-score {
+  color: #d97706;
+}
+
+.evaluation.needs-work .evaluation-score {
+  color: #dc2626;
+}
+
+.strengths,
+.gaps {
+  margin-top: 0.75rem;
+}
+
+.strengths ul,
+.gaps ul {
+  margin: 0.5rem 0 0 1.5rem;
+  padding: 0;
+}
+
+.case-complete {
+  background: linear-gradient(135deg, #f0fdf4 0%, #ecfdf5 100%);
+  border: 2px solid #22c55e;
+  border-radius: 0.75rem;
+  padding: 1.5rem;
+  margin-top: 1rem;
+}
+
+.case-complete h4 {
+  margin: 0 0 1rem;
+  color: #15803d;
+}
+
+.learning-points {
+  margin-top: 1rem;
+  background: white;
+  padding: 1rem;
+  border-radius: 0.5rem;
+}
+
+.learning-points h5 {
+  margin: 0 0 0.5rem;
+  color: #374151;
+}
+
+.learning-points ul {
+  margin: 0;
+  padding-left: 1.5rem;
+}
+
 .status {
   margin-top: 0.75rem;
   font-size: 0.9rem;

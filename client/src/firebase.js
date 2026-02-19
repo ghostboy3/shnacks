@@ -1,6 +1,7 @@
-// Firebase initialization for client-side auth
+// Firebase initialization for client-side auth and Firestore
 import { initializeApp } from "firebase/app";
 import { getAuth, GoogleAuthProvider } from "firebase/auth";
+import { getFirestore } from "firebase/firestore";
 
 const firebaseConfig = {
     apiKey: "AIzaSyAo6ikKR1J1yDQKujxkvUnVGp8OyYdRK1M",
@@ -15,6 +16,7 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const provider = new GoogleAuthProvider();
+const db = getFirestore(app);
 
-export { auth, provider };
+export { auth, provider, db };
 
