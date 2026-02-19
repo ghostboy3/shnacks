@@ -1,79 +1,75 @@
-## T2DM Socratic Tutor Prototype
+# Medical Learning Coach
 
-This prototype teaches medical students how to select medications for patients with Type 2 Diabetes Mellitus using **Socratic questioning** over a **user-uploaded PDF dataset** (guidelines, notes, tables, etc.).
+A comprehensive learning platform for medical students to practice medication selection using their own PDF resources.
 
-### High-level features
+## Features
 
-- **Google login via Firebase**
-- **PDF upload** of T2DM medication resources
-- **Server-side PDF text extraction + embeddings (OpenAI)**
-- **Retrieval-augmented generation (RAG)** that is **strictly limited to the uploaded PDFs**
-- **Socratic AI agent**:
-  - Asks probing questions instead of giving answers
-  - Pushes learners to articulate their full reasoning chain
-  - Only provides feedback once the learner indicates they are done reasoning
+- **Study Mode**: Three-phase learning approach
+  - Deconstruction: Segment dataset into functional categories
+  - Schema Mapping: Build illness scripts for patient anchors
+  - Contrast & Compare: Venn diagram comparison of drug classes
 
-### Tech stack
+- **Training Mode**: 
+  - Socratic Tutor: Interactive questioning to guide learning
+  - Adaptive Case-Based: Progressive disclosure with difficulty adaptation
 
-- **Frontend**: React + Vite + Firebase Web SDK
-- **Backend**: Node.js + Express
-- **AI**: OpenAI API (chat + embeddings)
-- **Auth**: Firebase Authentication (Google provider)
+## Deployment to Vercel
 
-### Quick start
+1. **Install Vercel CLI** (if not already installed):
+   ```bash
+   npm i -g vercel
+   ```
 
-1. **Install dependencies**
+2. **Login to Vercel**:
+   ```bash
+   vercel login
+   ```
 
-```bash
-cd /home/nico-to/Coding/SHNacks2
-cd server && npm install
-cd ../client && npm install
-```
+3. **Deploy**:
+   ```bash
+   vercel
+   ```
 
-2. **Configure environment variables**
+4. **Set Environment Variables** in Vercel Dashboard:
+   - `OPENAI_API_KEY`: Your OpenAI API key
+   - `CLIENT_ORIGIN`: Your Vercel deployment URL (optional, defaults to *)
 
-Create a `.env` file inside `server`:
+5. **For Production Deployment**:
+   ```bash
+   vercel --prod
+   ```
 
-```bash
-OPENAI_API_KEY=your_openai_key_here
-PORT=4000
-CLIENT_ORIGIN=http://localhost:5173
-```
+## Environment Variables
 
-> Use the OpenAI project key you provided; keep it **only** in this `.env` file (never commit it).
+- `OPENAI_API_KEY`: Required for AI features
+- `CLIENT_ORIGIN`: CORS origin (optional, defaults to *)
 
-3. **Run backend**
+## Local Development
 
-```bash
-cd /home/nico-to/Coding/SHNacks2/server
-npm run dev
-```
+1. **Backend**:
+   ```bash
+   cd server
+   npm install
+   npm run dev
+   ```
 
-4. **Run frontend**
+2. **Frontend**:
+   ```bash
+   cd client
+   npm install
+   npm run dev
+   ```
 
-```bash
-cd /home/nico-to/Coding/SHNacks2/client
-npm run dev
-```
+3. **Set up `.env` in server directory**:
+   ```
+   OPENAI_API_KEY=your_key_here
+   PORT=4000
+   CLIENT_ORIGIN=http://localhost:5173
+   ```
 
-Open the printed `localhost` URL (default `http://localhost:5173`).
+## Project Structure
 
-### Flow
-
-1. **Login with Google** (Firebase Auth).
-2. **Upload one or more PDF files** with T2DM medication information.
-3. Start a **learning session**:
-   - Enter a **patient case** and your **initial medication choice**.
-   - The AI tutor:
-     - Uses only your uploaded PDFs as knowledge.
-     - Asks **Socratic questions** (e.g., about eGFR, ASCVD, weight, hypoglycemia risk).
-     - Identifies **gaps or inconsistencies** in your reasoning.
-   - When you’re done, tell the agent (e.g., “I’m done, please give feedback”) and it will provide a **structured critique** and suggestions, still grounded in the PDF dataset.
-
-### Important constraints
-
-- The AI is **explicitly instructed** to:
-  - Only use information retrieved from the uploaded PDFs.
-  - Refuse to fabricate drug details that are not present in the dataset.
-  - Stay in **question-only mode** until the learner indicates they are finished reasoning.
-
+- `/client`: React frontend (Vite)
+- `/server`: Express backend
+- `/api`: Vercel serverless functions
+- `/vercel.json`: Vercel configuration

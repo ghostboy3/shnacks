@@ -578,7 +578,472 @@ Return JSON:
   }
 });
 
-app.listen(PORT, () => {
-  console.log(`Server listening on port ${PORT}`);
+/**
+ * Extract deconstruction items from PDFs for Study Mode
+ * GET /api/get-deconstruction-items
+ */
+app.get("/api/get-deconstruction-items", async (req, res) => {
+  try {
+    const userId = req.headers["x-user-id"];
+    if (!userId) {
+      return res.status(400).json({ error: "Missing x-user-id header" });
+    }
+
+    if (!openai) {
+      return res.status(503).json({ error: "AI not configured" });
+    }
+
+    const store = userStores.get(userId);
+    if (!store || !store.chunks || store.chunks.length === 0) {
+      return res.status(400).json({ error: "No PDF knowledge found. Please upload PDFs first." });
+    }
+
+    const fullText = store.chunks.join("\n\n---\n\n");
+    const sampleText = fullText.substring(0, 15000); // Limit to avoid token limits
+
+    const extractionPrompt = `
+Analyze this medical dataset and extract specific, discrete items that can be categorized. Extract items as individual statements or facts that can be dragged into buckets.
+
+DATASET:
+${sampleText}
+
+Extract items that fit into these categories:
+1. Pathophysiology - mechanisms, how drugs work, disease processes
+2. Red Flags/Contraindications - warnings, avoid situations, contraindications
+3. Differentiators - what makes one drug different from another, unique features
+4. Gold Standard/Best Practices - recommended approaches, guidelines, standard protocols
+
+For each item, extract:
+- A concise statement (1-2 sentences max)
+- The drug or concept it relates to
+- The category it belongs to
+
+Return JSON array:
+{
+  "items": [
+    {
+      "id": 1,
+      "text": "concise statement",
+      "drug": "drug name or 'general'",
+      "suggestedCategory": "pathophysiology|redFlags|differentiators|goldStandard"
+    },
+    ...
+  ]
+}
+
+Extract 30-50 diverse items covering different drugs and concepts. Make each item specific and actionable.
+`;
+
+    const completion = await openai.chat.completions.create({
+      model: "gpt-4o-mini",
+      messages: [
+        {
+          role: "system",
+          content: "You are a medical content analyzer extracting discrete, categorizable items from medical datasets. Return valid JSON only."
+        },
+        { role: "user", content: extractionPrompt }
+      ],
+      temperature: 0.3,
+      response_format: { type: "json_object" }
+    });
+
+    const result = JSON.parse(completion.choices[0].message.content);
+    res.json({ items: result.items || [] });
+  } catch (err) {
+    console.error("Error in /api/get-deconstruction-items", err);
+    res.status(500).json({ error: "Failed to extract deconstruction items" });
+  }
 });
+
+/**
+ * Generate Venn diagram labels for contrast & compare
+ * POST /api/generate-venn-labels
+ */
+app.post("/api/generate-venn-labels", async (req, res) => {
+  try {
+    const userId = req.headers["x-user-id"];
+    const { drug1, drug2 } = req.body || {};
+
+    if (!userId || !drug1 || !drug2) {
+      return res.status(400).json({ error: "Missing required fields" });
+    }
+
+    if (!openai) {
+      return res.status(503).json({ error: "AI not configured" });
+    }
+
+    const store = userStores.get(userId);
+    if (!store || !store.chunks || store.chunks.length === 0) {
+      return res.status(400).json({ error: "No PDF knowledge found" });
+    }
+
+    const context = store.chunks.slice(0, 20).join("\n\n---\n\n");
+
+    const vennPrompt = `
+Analyze these two drug classes from the dataset: ${drug1} vs ${drug2}
+
+DATASET:
+${context}
+
+Generate labels for a Venn diagram comparison. Extract specific facts/statements that can be categorized as:
+1. ${drug1} ONLY - features unique to ${drug1}
+2. ${drug2} ONLY - features unique to ${drug2}
+3. BOTH - features shared by both drugs
+4. NEITHER - features that apply to neither (distractors)
+
+CRITICAL: Each label must be written WITHOUT mentioning the drug name or giving away which section it belongs to. 
+Write facts neutrally so students must think about which drug(s) the fact applies to.
+
+Examples of GOOD labels (neutral, no hints):
+- "Reduces cardiovascular events"
+- "Contraindicated in eGFR < 30"
+- "May cause weight loss"
+- "First-line therapy for newly diagnosed patients"
+
+Examples of BAD labels (give away the answer):
+- "${drug1} reduces cardiovascular events" (mentions drug name)
+- "Unique to SGLT2 inhibitors" (gives away category)
+- "This drug class..." (implies it's specific)
+
+Return JSON:
+{
+  "drug1Only": [
+    {"id": 1, "text": "neutral fact that applies only to ${drug1}"},
+    ...
+  ],
+  "drug2Only": [
+    {"id": 1, "text": "neutral fact that applies only to ${drug2}"},
+    ...
+  ],
+  "both": [
+    {"id": 1, "text": "neutral fact that applies to both"},
+    ...
+  ],
+  "neither": [
+    {"id": 1, "text": "distractor fact"},
+    ...
+  ]
+}
+
+Generate 8-12 labels for drug1Only, 8-12 for drug2Only, 6-10 for both, and 4-6 distractors for neither.
+Base all labels strictly on the dataset content. NEVER mention drug names in the label text.
+`;
+
+    const completion = await openai.chat.completions.create({
+      model: "gpt-4o-mini",
+      messages: [
+        {
+          role: "system",
+          content: "You are creating Venn diagram labels for drug comparison. Return valid JSON only."
+        },
+        { role: "user", content: vennPrompt }
+      ],
+      temperature: 0.5,
+      response_format: { type: "json_object" }
+    });
+
+    const result = JSON.parse(completion.choices[0].message.content);
+    res.json({
+      drug1Only: result.drug1Only || [],
+      drug2Only: result.drug2Only || [],
+      both: result.both || [],
+      neither: result.neither || []
+    });
+  } catch (err) {
+    console.error("Error in /api/generate-venn-labels", err);
+    res.status(500).json({ error: "Failed to generate Venn labels" });
+  }
+});
+
+/**
+ * Check schema mapping for Study Mode
+ * POST /api/check-schema
+ */
+app.post("/api/check-schema", async (req, res) => {
+  try {
+    const userId = req.headers["x-user-id"];
+    const { anchor, selectedDrugs } = req.body || {};
+
+    if (!userId || !anchor || !selectedDrugs) {
+      return res.status(400).json({ error: "Missing required fields" });
+    }
+
+    if (!openai) {
+      return res.status(503).json({ error: "AI not configured" });
+    }
+
+    const store = userStores.get(userId);
+    if (!store || !store.chunks || store.chunks.length === 0) {
+      return res.status(400).json({ error: "No PDF knowledge found" });
+    }
+
+    const context = store.chunks.slice(0, 10).join("\n\n---\n\n");
+
+    const checkPrompt = `
+Check if the selected drugs are appropriate for this patient anchor based on the dataset.
+
+PATIENT ANCHOR: ${anchor}
+SELECTED DRUGS: ${selectedDrugs.join(", ")}
+
+DATASET CONTENT:
+${context}
+
+Provide feedback:
+1. Which drugs are correct for this anchor?
+2. Which drugs are incorrect and why?
+3. What does the dataset say about contraindications or special considerations for this anchor?
+4. Reference specific information from the dataset.
+
+Return JSON:
+{
+  "correct": ["list of correct drugs"],
+  "incorrect": ["list of incorrect drugs"],
+  "feedback": "detailed feedback with dataset references",
+  "warnings": ["any warnings about contraindications"]
+}
+`;
+
+    const completion = await openai.chat.completions.create({
+      model: "gpt-4o-mini",
+      messages: [
+        {
+          role: "system",
+          content: "You are a medical educator helping students build illness scripts. Return valid JSON only."
+        },
+        { role: "user", content: checkPrompt }
+      ],
+      temperature: 0.3,
+      response_format: { type: "json_object" }
+    });
+
+    const result = JSON.parse(completion.choices[0].message.content);
+    res.json(result);
+  } catch (err) {
+    console.error("Error in /api/check-schema", err);
+    res.status(500).json({ error: "Failed to check schema" });
+  }
+});
+
+/**
+ * Generate comparison question for Study Mode
+ * POST /api/generate-comparison
+ */
+app.post("/api/generate-comparison", async (req, res) => {
+  try {
+    const userId = req.headers["x-user-id"];
+    const { drug1, drug2 } = req.body || {};
+
+    if (!userId || !drug1 || !drug2) {
+      return res.status(400).json({ error: "Missing required fields" });
+    }
+
+    if (!openai) {
+      return res.status(503).json({ error: "AI not configured" });
+    }
+
+    const store = userStores.get(userId);
+    if (!store || !store.chunks || store.chunks.length === 0) {
+      return res.status(400).json({ error: "No PDF knowledge found" });
+    }
+
+    const context = store.chunks.slice(0, 15).join("\n\n---\n\n");
+
+    const comparisonPrompt = `
+Create an interleaving comparison question for these two drug classes: ${drug1} vs ${drug2}
+
+DATASET CONTENT:
+${context}
+
+Generate a question that asks the student to find a specific discriminator between these two drugs in the dataset. Examples:
+- "Find the one variable where these two drugs diverge in renal protection"
+- "What is the key difference in their contraindications?"
+- "How do their GFR cutoffs differ?"
+
+Return JSON:
+{
+  "question": "the comparison question",
+  "hint": "optional hint if needed"
+}
+`;
+
+    const completion = await openai.chat.completions.create({
+      model: "gpt-4o-mini",
+      messages: [
+        {
+          role: "system",
+          content: "You are a medical educator creating interleaving comparison questions. Return valid JSON only."
+        },
+        { role: "user", content: comparisonPrompt }
+      ],
+      temperature: 0.7,
+      response_format: { type: "json_object" }
+    });
+
+    const result = JSON.parse(completion.choices[0].message.content);
+    res.json(result);
+  } catch (err) {
+    console.error("Error in /api/generate-comparison", err);
+    res.status(500).json({ error: "Failed to generate comparison" });
+  }
+});
+
+/**
+ * Check comparison answer for Study Mode
+ * POST /api/check-comparison
+ */
+app.post("/api/check-comparison", async (req, res) => {
+  try {
+    const userId = req.headers["x-user-id"];
+    const { drug1, drug2, answer, question } = req.body || {};
+
+    if (!userId || !drug1 || !drug2 || !answer) {
+      return res.status(400).json({ error: "Missing required fields" });
+    }
+
+    if (!openai) {
+      return res.status(503).json({ error: "AI not configured" });
+    }
+
+    const store = userStores.get(userId);
+    if (!store || !store.chunks || store.chunks.length === 0) {
+      return res.status(400).json({ error: "No PDF knowledge found" });
+    }
+
+    const context = store.chunks.slice(0, 15).join("\n\n---\n\n");
+
+    const checkPrompt = `
+Evaluate the student's answer to this comparison question.
+
+QUESTION: ${question}
+DRUGS: ${drug1} vs ${drug2}
+STUDENT'S ANSWER: ${answer}
+
+DATASET CONTENT:
+${context}
+
+Evaluate:
+1. Did they identify the correct discriminator?
+2. Is their answer supported by the dataset?
+3. What does the dataset actually say about this difference?
+4. Provide constructive feedback.
+
+Return JSON:
+{
+  "isCorrect": true/false,
+  "feedback": "detailed feedback",
+  "correctAnswer": "what the dataset says",
+  "datasetReference": "specific quote or reference from dataset"
+}
+`;
+
+    const completion = await openai.chat.completions.create({
+      model: "gpt-4o-mini",
+      messages: [
+        {
+          role: "system",
+          content: "You are a medical educator providing feedback on comparison questions. Return valid JSON only."
+        },
+        { role: "user", content: checkPrompt }
+      ],
+      temperature: 0.3,
+      response_format: { type: "json_object" }
+    });
+
+    const result = JSON.parse(completion.choices[0].message.content);
+    res.json(result);
+  } catch (err) {
+    console.error("Error in /api/check-comparison", err);
+    res.status(500).json({ error: "Failed to check comparison" });
+  }
+});
+
+/**
+ * Check Venn diagram placements
+ * POST /api/check-venn
+ */
+app.post("/api/check-venn", async (req, res) => {
+  try {
+    const userId = req.headers["x-user-id"];
+    const { drug1, drug2, placements, correctLabels } = req.body || {};
+
+    if (!userId || !drug1 || !drug2) {
+      return res.status(400).json({ error: "Missing required fields" });
+    }
+
+    if (!openai) {
+      return res.status(503).json({ error: "AI not configured" });
+    }
+
+    const store = userStores.get(userId);
+    if (!store || !store.chunks || store.chunks.length === 0) {
+      return res.status(400).json({ error: "No PDF knowledge found" });
+    }
+
+    const context = store.chunks.slice(0, 20).join("\n\n---\n\n");
+
+    const checkPrompt = `
+Evaluate the student's Venn diagram placement for ${drug1} vs ${drug2}.
+
+CORRECT LABELS:
+Drug1 Only: ${JSON.stringify(correctLabels.drug1Only || [])}
+Drug2 Only: ${JSON.stringify(correctLabels.drug2Only || [])}
+Both: ${JSON.stringify(correctLabels.both || [])}
+Neither: ${JSON.stringify(correctLabels.neither || [])}
+
+STUDENT'S PLACEMENTS:
+Drug1 Only: ${JSON.stringify(placements.drug1Only || [])}
+Drug2 Only: ${JSON.stringify(placements.drug2Only || [])}
+Both: ${JSON.stringify(placements.both || [])}
+Neither: ${JSON.stringify(placements.neither || [])}
+
+DATASET:
+${context}
+
+Evaluate:
+1. Which labels are correctly placed?
+2. Which labels are in the wrong section?
+3. Provide specific feedback on mistakes
+4. Reference the dataset to explain correct placements
+
+Return JSON:
+{
+  "score": 0.0-1.0,
+  "correct": ["list of correctly placed labels"],
+  "incorrect": ["list of incorrectly placed labels with correct section"],
+  "feedback": "detailed feedback",
+  "datasetReferences": ["specific quotes from dataset"]
+}
+`;
+
+    const completion = await openai.chat.completions.create({
+      model: "gpt-4o-mini",
+      messages: [
+        {
+          role: "system",
+          content: "You are evaluating Venn diagram placements. Return valid JSON only."
+        },
+        { role: "user", content: checkPrompt }
+      ],
+      temperature: 0.3,
+      response_format: { type: "json_object" }
+    });
+
+    const result = JSON.parse(completion.choices[0].message.content);
+    res.json(result);
+  } catch (err) {
+    console.error("Error in /api/check-venn", err);
+    res.status(500).json({ error: "Failed to check Venn placement" });
+  }
+});
+
+// Export for Vercel serverless functions
+if (require.main === module) {
+  // Running as standalone server
+  app.listen(PORT, () => {
+    console.log(`Server listening on port ${PORT}`);
+  });
+} else {
+  // Export for Vercel
+  module.exports = app;
+}
 

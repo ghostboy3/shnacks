@@ -396,6 +396,394 @@ button.small {
   padding-left: 1.5rem;
 }
 
+/* Study Mode Styles */
+.main-mode-toggle {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+  flex-wrap: wrap;
+}
+
+.study-mode-container {
+  margin-top: 1rem;
+}
+
+.study-phase-selector {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+  flex-wrap: wrap;
+}
+
+.phase-btn {
+  background: #e5e7eb;
+  color: #111827;
+  padding: 0.6rem 1rem;
+  border-radius: 0.5rem;
+  border: none;
+  cursor: pointer;
+  font-size: 0.9rem;
+}
+
+.phase-btn.active {
+  background: #3b82f6;
+  color: white;
+}
+
+.deconstruction-phase,
+.schema-phase,
+.contrast-phase {
+  margin-top: 1rem;
+}
+
+.deconstruction-workspace {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.dataset-panel,
+.buckets-panel {
+  display: flex;
+  flex-direction: column;
+}
+
+.dataset-panel h5,
+.buckets-panel h5 {
+  margin: 0 0 0.75rem;
+  color: #374151;
+}
+
+.dataset-text {
+  font-size: 0.9rem;
+  line-height: 1.6;
+  user-select: text;
+}
+
+.selected-text-preview {
+  margin-top: 0.5rem;
+  padding: 0.5rem;
+  background: #dbeafe;
+  border-radius: 0.25rem;
+  font-size: 0.85rem;
+}
+
+.buckets-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+.bucket {
+  background: #f9fafb;
+  border: 2px dashed #d1d5db;
+  border-radius: 0.5rem;
+  padding: 1rem;
+  min-height: 200px;
+}
+
+.bucket h6 {
+  margin: 0 0 0.75rem;
+  color: #1e40af;
+  font-size: 0.9rem;
+}
+
+.bucket-item {
+  background: white;
+  padding: 0.5rem;
+  margin-bottom: 0.5rem;
+  border-radius: 0.25rem;
+  border: 1px solid #e5e7eb;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.85rem;
+}
+
+.bucket-item button {
+  background: #ef4444;
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 20px;
+  height: 20px;
+  cursor: pointer;
+  font-size: 0.75rem;
+  padding: 0;
+}
+
+.add-btn {
+  background: #22c55e;
+  color: white;
+  border: none;
+  padding: 0.5rem;
+  border-radius: 0.25rem;
+  cursor: pointer;
+  font-size: 0.85rem;
+  margin-top: 0.5rem;
+}
+
+.schema-workspace,
+.contrast-workspace {
+  margin-top: 1rem;
+}
+
+.anchor-selector,
+.drug-comparison-selector {
+  margin-bottom: 1.5rem;
+}
+
+.anchor-buttons {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  margin-top: 0.75rem;
+}
+
+.anchor-btn {
+  background: #e5e7eb;
+  color: #111827;
+  border: none;
+  padding: 0.6rem 1rem;
+  border-radius: 0.5rem;
+  cursor: pointer;
+  font-size: 0.9rem;
+}
+
+.anchor-btn.active {
+  background: #3b82f6;
+  color: white;
+}
+
+.script-builder {
+  background: #f9fafb;
+  padding: 1rem;
+  border-radius: 0.5rem;
+  border: 1px solid #e5e7eb;
+}
+
+.drug-selector {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin: 1rem 0;
+}
+
+.drug-checkbox {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem;
+  background: white;
+  border-radius: 0.25rem;
+  cursor: pointer;
+}
+
+.drug-checkbox input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  cursor: pointer;
+}
+
+.comparison-selector {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-top: 0.75rem;
+}
+
+.comparison-selector select {
+  flex: 1;
+  padding: 0.6rem;
+  border-radius: 0.5rem;
+  border: 1px solid #e5e7eb;
+  font-size: 0.9rem;
+}
+
+.comparison-interface {
+  margin-top: 1.5rem;
+}
+
+.comparison-question {
+  background: #f9fafb;
+  padding: 1rem;
+  border-radius: 0.5rem;
+  border: 1px solid #e5e7eb;
+  margin-top: 1rem;
+}
+
+.comparison-question h5 {
+  margin: 0 0 0.75rem;
+  color: #1e40af;
+}
+
+.comparison-question textarea {
+  width: 100%;
+  padding: 0.75rem;
+  border-radius: 0.5rem;
+  border: 1px solid #e5e7eb;
+  margin-bottom: 0.75rem;
+  font-family: inherit;
+}
+
+/* Draggable items */
+.draggable-item {
+  background: white;
+  border: 2px solid #3b82f6;
+  border-radius: 0.5rem;
+  padding: 0.75rem;
+  margin-bottom: 0.5rem;
+  cursor: grab;
+  font-size: 0.9rem;
+  transition: all 0.2s;
+  user-select: none;
+}
+
+.draggable-item:hover {
+  background: #eff6ff;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(59, 130, 246, 0.2);
+}
+
+.draggable-item:active {
+  cursor: grabbing;
+  opacity: 0.7;
+}
+
+.items-panel {
+  display: flex;
+  flex-direction: column;
+}
+
+.items-list {
+  max-height: 500px;
+  overflow-y: auto;
+  padding: 0.5rem;
+  background: #f9fafb;
+  border-radius: 0.5rem;
+  border: 1px solid #e5e7eb;
+}
+
+/* Venn Diagram Styles */
+.venn-diagram-container {
+  margin-top: 1.5rem;
+}
+
+.venn-diagram {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: 1fr 1fr;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+  min-height: 400px;
+}
+
+.venn-section {
+  border: 3px solid #e5e7eb;
+  border-radius: 0.75rem;
+  padding: 1rem;
+  min-height: 180px;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+}
+
+.venn-section.drug1-only {
+  background: rgba(59, 130, 246, 0.1);
+  border-color: #3b82f6;
+  grid-column: 1;
+  grid-row: 1;
+}
+
+.venn-section.drug2-only {
+  background: rgba(34, 197, 94, 0.1);
+  border-color: #22c55e;
+  grid-column: 2;
+  grid-row: 1;
+}
+
+.venn-section.both {
+  background: rgba(168, 85, 247, 0.15);
+  border-color: #a855f7;
+  grid-column: 1 / 3;
+  grid-row: 2;
+  border-style: dashed;
+}
+
+.venn-section h6 {
+  margin: 0 0 0.75rem;
+  font-size: 0.9rem;
+  color: #374151;
+  font-weight: 600;
+}
+
+.venn-label {
+  background: white;
+  border: 1px solid #d1d5db;
+  border-radius: 0.25rem;
+  padding: 0.5rem;
+  margin-bottom: 0.5rem;
+  font-size: 0.85rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.venn-label button {
+  background: #ef4444;
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 20px;
+  height: 20px;
+  cursor: pointer;
+  font-size: 0.75rem;
+  padding: 0;
+  margin-left: 0.5rem;
+}
+
+.labels-pool {
+  margin-top: 1rem;
+}
+
+.labels-pool h5 {
+  margin: 0 0 0.75rem;
+  color: #374151;
+}
+
+.labels-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  padding: 1rem;
+  background: #f9fafb;
+  border-radius: 0.5rem;
+  border: 1px solid #e5e7eb;
+  min-height: 100px;
+}
+
+@media (max-width: 900px) {
+  .deconstruction-workspace {
+    grid-template-columns: 1fr;
+  }
+  
+  .buckets-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .venn-diagram {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto;
+  }
+
+  .venn-section.both {
+    grid-column: 1;
+    grid-row: 3;
+  }
+}
+
 .status {
   margin-top: 0.75rem;
   font-size: 0.9rem;
